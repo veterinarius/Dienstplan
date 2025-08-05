@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <title>Dienstplan - Mobile Ansicht</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #1d1d1f;
+            line-height: 1.4;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e5ea;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .date-range {
+            font-size: 1rem;
+            color: #86868b;
+            font-weight: 500;
+        }
+
+        .last-update {
+            text-align: center;
+            color: #86868b;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .shift-section {
+            margin-bottom: 2rem;
+        }
+
+        .shift-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 4px solid #2196f3;
+            border-radius: 8px;
+            color: #1d1d1f;
+        }
+
+        .shift-title:nth-child(4n+1) {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 4px solid #2196f3;
+        }
+
+        .shift-title:nth-child(4n+2) {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border-left: 4px solid #4caf50;
+        }
+
+        .shift-title:nth-child(4n+3) {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);
+            border-left: 4px solid #ff9800;
+        }
+
+        .shift-title:nth-child(4n) {
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+            border-left: 4px solid #e91e63;
+        }
+
+        .mobile-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .mobile-table th {
+            background: #f8f9fa;
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            font-weight: 600;
+            color: #1d1d1f;
+            border-bottom: 2px solid #e5e5ea;
+            font-size: 0.9rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .mobile-table td {
+            padding: 0.6rem 0.4rem;
+            text-align: center;
+            border-bottom: 1px solid #f2f2f7;
+            font-size: 0.85rem;
+            word-wrap: break-word;
+            max-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mobile-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .mobile-table .row-number {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #86868b;
+            min-width: 50px;
+            width: 50px;
+            font-size: 0.8rem;
+        }
+
+        .mobile-table td.employee-cell {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Responsive für sehr kleine Bildschirme */
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .container {
+                padding: 0.75rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .shift-title {
+                font-size: 1.1rem;
+                padding: 0.6rem;
+            }
+            
+            .mobile-table th,
+            .mobile-table td {
+                padding: 0.5rem 0.3rem;
+                font-size: 0.8rem;
+            }
+            
+            .mobile-table .row-number {
+                min-width: 40px;
+                width: 40px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Horizontaler Scroll für Tabellen */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        /* Farb-Mapping für mobile Ansicht */
+        .color-yellow { background-color: #ffe082 !important; }
+        .color-turquoise { background-color: #b2dfdb !important; }
+        .color-green { background-color: #c5e1a5 !important; }
+        .color-orange { background-color: #ffab91 !important; }
+        .color-purple { background-color: #b39ddb !important; }
+        .color-blue { background-color: #90caf9 !important; }
+        .color-red { background-color: #ef9a9a !important; }
+        .color-light-blue { background-color: #e3f2fd !important; }
+        .color-light-green { background-color: #e8f5e8 !important; }
+
+        .error-message {
+            text-align: center;
+            padding: 2rem;
+            color: #d32f2f;
+            background: #ffebee;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #86868b;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 1rem;
+            color: #86868b;
+            font-style: italic;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        /* Smooth scrolling für bessere UX */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Bessere Touch-Targets */
+        .mobile-table th,
+        .mobile-table td {
+            min-height: 44px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="schedule-title">Dienstplan wird geladen...</h1>
+            <div class="date-range" id="date-range"></div>
+        </div>
+        
+        <div class="last-update" id="last-update"></div>
+        
+        <div id="schedule-content" class="loading">
+            📋 Dienstplan wird geladen...
+        </div>
+    </div>
+
+    <script>
+        // Farbzuordnung für CSS-Klassen
+        const colorMap = {
+            '#ffe082': 'color-yellow',
+            '#b2dfdb': 'color-turquoise', 
+            '#c5e1a5': 'color-green',
+            '#ffab91': 'color-orange',
+            '#b39ddb': 'color-purple',
+            '#90caf9': 'color-blue',
+            '#ef9a9a': 'color-red',
+            '#e3f2fd': 'color-light-blue',
+            '#e8f5e8': 'color-light-green'
+        };
+
+        // RGB zu Hex Konverter
+        function rgbToHex(rgb) {
+            if (!rgb || rgb === 'transparent' || rgb === '') return null;
+            
+            // Bereits Hex-Format
+            if (rgb.startsWith('#')) return rgb;
+            
+            // RGB-Format parsen
+            const result = rgb.match(/\d+/g);
+            if (!result || result.length < 3) return null;
+            
+            const r = parseInt(result[0]);
+            const g = parseInt(result[1]);
+            const b = parseInt(result[2]);
+            
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+
+        // Hauptfunktion zum Laden der Daten
+        function loadScheduleData() {
+            try {
+                // URL-Parameter auslesen
+                const urlParams = new URLSearchParams(window.location.search);
+                const encodedData = urlParams.get('data');
+                
+                if (!encodedData) {
+                    showError('Keine Dienstplan-Daten gefunden. Bitte verwenden Sie den korrekten Link.');
+                    return;
+                }
+
+                // Daten dekomprimieren
+                const jsonString = LZString.decompressFromBase64(encodedData);
+                if (!jsonString) {
+                    showError('Fehler beim Dekomprimieren der Daten. Der Link ist möglicherweise beschädigt.');
+                    return;
+                }
+
+                // JSON parsen
+                const scheduleData = JSON.parse(jsonString);
+                console.log('Geladene Dienstplan-Daten:', scheduleData);
+                
+                // Dienstplan anzeigen
+                displaySchedule(scheduleData);
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Dienstplan-Daten:', error);
+                showError('Fehler beim Laden des Dienstplans. Bitte versuchen Sie es erneut oder verwenden Sie einen neuen Link.');
+            }
+        }
+
+        // Dienstplan anzeigen
+        function displaySchedule(data) {
+            // Header aktualisieren
+            document.getElementById('schedule-title').textContent = data.title || 'Dienstplan';
+            
+            // Datumsbereich anzeigen
+            const dateRangeEl = document.getElementById('date-range');
+            if (data.startDate && data.endDate) {
+                const startDate = new Date(data.startDate).toLocaleDateString('de-DE');
+                const endDate = new Date(data.endDate).toLocaleDateString('de-DE');
+                dateRangeEl.textContent = `${startDate} - ${endDate}`;
+            } else {
+                dateRangeEl.style.display = 'none';
+            }
+            
+            // Letzte Aktualisierung anzeigen
+            const lastUpdateEl = document.getElementById('last-update');
+            if (data.lastUpdate) {
+                lastUpdateEl.textContent = `Zuletzt aktualisiert: ${data.lastUpdate}`;
+            } else {
+                lastUpdateEl.style.display = 'none';
+            }
+            
+            // Schichten anzeigen
+            const contentEl = document.getElementById('schedule-content');
+            contentEl.innerHTML = '';
+            
+            if (!data.shifts || Object.keys(data.shifts).length === 0) {
+                contentEl.innerHTML = '<div class="no-data">Keine Schichtdaten verfügbar.</div>';
+                return;
+            }
+            
+            // Jede Schicht als Tabelle anzeigen
+            Object.entries(data.shifts).forEach(([shiftName, shiftData]) => {
+                const shiftSection = document.createElement('div');
+                shiftSection.className = 'shift-section';
+                
+                // Schicht-Titel
+                const shiftTitle = document.createElement('div');
+                shiftTitle.className = 'shift-title';
+                shiftTitle.textContent = shiftName;
+                shiftSection.appendChild(shiftTitle);
+                
+                // Prüfen ob Daten vorhanden sind
+                if (!shiftData || shiftData.length === 0) {
+                    const noData = document.createElement('div');
+                    noData.className = 'no-data';
+                    noData.textContent = 'Keine Daten für diese Schicht verfügbar.';
+                    shiftSection.appendChild(noData);
+                    contentEl.appendChild(shiftSection);
+                    return;
+                }
+                
+                // Tabellen-Container für horizontalen Scroll
+                const tableContainer = document.createElement('div');
+                tableContainer.className = 'table-container';
+                
+                // Tabelle erstellen
+                const table = document.createElement('table');
+                table.className = 'mobile-table';
+                
+                // Tabellen-Header
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                
+                // Erste Spalte (lfd. Nr./Zeit)
+                const firstHeader = document.createElement('th');
+                firstHeader.textContent = 'Nr./Zeit';
+                headerRow.appendChild(firstHeader);
+                
+                // Tag-Spalten
+                data.days.forEach(day => {
+                    const dayHeader = document.createElement('th');
+                    dayHeader.textContent = day;
+                    headerRow.appendChild(dayHeader);
+                });
+                
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+                
+                // Tabellen-Body
+                const tbody = document.createElement('tbody');
+                
+                shiftData.forEach((rowData, rowIndex) => {
+                    const row = document.createElement('tr');
+                    
+                    rowData.forEach((cellData, cellIndex) => {
+                        const cell = document.createElement('td');
+                        
+                        // Erste Spalte als Nummer/Zeit
+                        if (cellIndex === 0) {
+                            cell.className = 'row-number';
+                        } else {
+                            cell.className = 'employee-cell';
+                        }
+                        
+                        cell.textContent = cellData || '';
+                        
+                        // Farben anwenden
+                        const colorKey = `${shiftName}_${rowIndex}_${cellIndex}`;
+                        if (data.colors && data.colors[colorKey]) {
+                            const hexColor = rgbToHex(data.colors[colorKey]);
+                            if (hexColor && colorMap[hexColor]) {
+                                cell.classList.add(colorMap[hexColor]);
+                            } else {
+                                // Fallback: Direkte Farbanwendung
+                                cell.style.backgroundColor = data.colors[colorKey];
+                            }
+                        }
+                        
+                        row.appendChild(cell);
+                    });
+                    
+                    tbody.appendChild(row);
+                });
+                
+                table.appendChild(tbody);
+                tableContainer.appendChild(table);
+                shiftSection.appendChild(tableContainer);
+                contentEl.appendChild(shiftSection);
+            });
+        }
+
+        // Fehlermeldung anzeigen
+        function showError(message) {
+            const contentEl = document.getElementById('schedule-content');
+            contentEl.innerHTML = `
+                <div class="error-message">
+                    <h3>⚠️ Fehler</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // Beim Laden der Seite ausführen
+        document.addEventListener('DOMContentLoaded', loadScheduleData);
+
+        // Service Worker für Offline-Verfügbarkeit (optional)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

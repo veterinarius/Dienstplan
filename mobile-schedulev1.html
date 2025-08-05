@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Ansicht</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #1d1d1f;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem 1rem 1rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .date-info {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .schedule-section {
+            padding: 1rem;
+        }
+
+        .table-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 1.5rem 0 1rem 0;
+            color: #1d1d1f;
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        .table-title:nth-child(even) {
+            border-left-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+        }
+
+        .table-title:nth-child(3n) {
+            border-left-color: #ff9800;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .schedule-table th {
+            background: #f8f9fa;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #1d1d1f;
+            border-bottom: 2px solid #e5e5ea;
+            font-size: 0.8rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .schedule-table td {
+            padding: 10px 6px;
+            text-align: center;
+            border-bottom: 1px solid #f2f2f7;
+            font-size: 0.8rem;
+            word-break: break-word;
+            max-width: 120px;
+        }
+
+        .schedule-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .row-number {
+            background: #f8f9fa !important;
+            font-weight: 600;
+            color: #86868b;
+            min-width: 40px;
+            width: 40px;
+        }
+
+        /* Responsive Verbesserungen */
+        @media (max-width: 768px) {
+            .schedule-table {
+                font-size: 0.75rem;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 8px 4px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .table-title {
+                font-size: 1.1rem;
+                padding: 0.8rem;
+            }
+        }
+
+        /* Farbunterstützung */
+        .cell-yellow { background-color: #ffe082 !important; }
+        .cell-turquoise { background-color: #b2dfdb !important; }
+        .cell-green { background-color: #c5e1a5 !important; }
+        .cell-orange { background-color: #ffab91 !important; }
+        .cell-purple { background-color: #b39ddb !important; }
+        .cell-blue { background-color: #90caf9 !important; }
+        .cell-red { background-color: #ef9a9a !important; }
+
+        .update-info {
+            background: #e8f5e8;
+            padding: 1rem;
+            margin: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid #4caf50;
+            font-size: 0.9rem;
+            color: #2e7d32;
+        }
+
+        .refresh-button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
+            transition: all 0.3s ease;
+            display: block;
+            margin: 1rem auto;
+        }
+
+        .refresh-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.6);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #86868b;
+            font-size: 1.1rem;
+        }
+
+        .whatsapp-share {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #25d366;
+            color: white;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .whatsapp-share:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="mobile-title">Dienstplan</h1>
+            <div class="date-info" id="mobile-date-info"></div>
+        </div>
+
+        <div class="update-info">
+            <strong>📱 Mobile Ansicht</strong><br>
+            Letztes Update: <span id="last-update">Wird geladen...</span>
+        </div>
+
+        <button class="refresh-button" onclick="loadScheduleData()">
+            🔄 Aktualisieren
+        </button>
+
+        <div class="schedule-section" id="mobile-schedule">
+            <div class="no-data">
+                <p>📋 Dienstplan wird geladen...</p>
+                <p>Bitte einen Moment warten.</p>
+            </div>
+        </div>
+    </div>
+
+    <button class="whatsapp-share" onclick="shareToWhatsApp()" title="Per WhatsApp teilen">
+        💬
+    </button>
+
+    <script>
+        // URL-Parameter parsen
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                data: params.get('data'),
+                title: params.get('title'),
+                startDate: params.get('start'),
+                endDate: params.get('end')
+            };
+        }
+
+        // Beispiel-Daten für Demo
+        function getExampleData() {
+            return {
+                title: "Dienstplan Bocholt",
+                startDate: "2025-01-06",
+                endDate: "2025-01-12",
+                shifts: {
+                    "Frühschicht": [
+                        ["1", "Dr. Schmidt", "Müller", "", "Weber", ""],
+                        ["2", "", "Schmidt", "Dr. Weber", "", "Klein"],
+                        ["3", "Müller", "", "Schmidt", "Dr. Weber", ""],
+                        ["4", "", "Weber", "", "Müller", "Schmidt"],
+                        ["5", "Klein", "", "Dr. Weber", "", ""],
+                        ["6", "", "Dr. Schmidt", "", "Klein", "Weber"],
+                        ["7", "Weber", "", "Müller", "", "Dr. Schmidt"]
+                    ],
+                    "Spätschicht": [
+                        ["1", "Weber", "", "Dr. Schmidt", "Klein", ""],
+                        ["2", "", "Klein", "", "Weber", "Müller"],
+                        ["3", "Dr. Schmidt", "", "Klein", "", ""],
+                        ["4", "", "Müller", "Weber", "", "Dr. Schmidt"],
+                        ["5", "Klein", "", "", "Müller", ""],
+                        ["6", "", "Weber", "Dr. Schmidt", "", "Klein"],
+                        ["7", "Müller", "", "", "Weber", ""]
+                    ]
+                },
+                days: ["Mo", "Di", "Mi", "Do", "Fr"],
+                colors: {},
+                lastUpdate: new Date().toLocaleString('de-DE')
+            };
+        }
+
+        // Daten laden (aus URL oder localStorage)
+        function loadScheduleData() {
+            const params = getUrlParams();
+            let scheduleData;
+
+            if (params.data) {
+                try {
+                    // Dekomprimiere Base64-kodierte Daten
+                    const decompressed = LZString.decompressFromBase64(params.data);
+                    scheduleData = JSON.parse(decompressed);
+                } catch (e) {
+                    console.error('Fehler beim Dekomprimieren der Daten:', e);
+                    scheduleData = getExampleData();
+                }
+            } else {
+                // Fallback: Beispiel-Daten für Demo
+                scheduleData = getExampleData();
+            }
+
+            renderSchedule(scheduleData);
+        }
+
+        // Dienstplan rendern
+        function renderSchedule(data) {
+            // Titel und Datum setzen
+            document.getElementById('mobile-title').textContent = data.title || 'Dienstplan';
+            
+            const startDate = data.startDate ? new Date(data.startDate).toLocaleDateString('de-DE') : '';
+            const endDate = data.endDate ? new Date(data.endDate).toLocaleDateString('de-DE') : '';
+            
+            if (startDate && endDate) {
+                document.getElementById('mobile-date-info').textContent = `${startDate} - ${endDate}`;
+            }
+
+            // Update-Zeit
+            document.getElementById('last-update').textContent = data.lastUpdate || new Date().toLocaleString('de-DE');
+
+            // Dienstplan-Tabellen generieren
+            const scheduleContainer = document.getElementById('mobile-schedule');
+            scheduleContainer.innerHTML = '';
+
+            if (!data.shifts || Object.keys(data.shifts).length === 0) {
+                scheduleContainer.innerHTML = `
+                    <div class="no-data">
+                        <p>❌ Keine Dienstplan-Daten verfügbar</p>
+                        <p>Bitte den QR-Code oder Link erneut generieren.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            Object.entries(data.shifts).forEach(([shiftName, shiftData]) => {
+                // Schicht-Titel
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'table-title';
+                titleDiv.textContent = shiftName;
+                scheduleContainer.appendChild(titleDiv);
+
+                // Tabelle erstellen
+                const table = document.createElement('table');
+                table.className = 'schedule-table';
+
+                // Header
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                
+                // Erste Spalte: Zeit/Nr.
+                const timeHeader = document.createElement('th');
+                timeHeader.textContent = 'Zeit';
+                headerRow.appendChild(timeHeader);
+
+                // Tage-Header
+                (data.days || []).forEach(day => {
+                    const dayHeader = document.createElement('th');
+                    dayHeader.textContent = day;
+                    headerRow.appendChild(dayHeader);
+                });
+
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                // Body
+                const tbody = document.createElement('tbody');
+                
+                shiftData.forEach((rowData, rowIndex) => {
+                    const row = document.createElement('tr');
+                    
+                    rowData.forEach((cellData, cellIndex) => {
+                        const cell = document.createElement('td');
+                        cell.textContent = cellData || '';
+                        
+                        // Erste Spalte als Zeit/Nr. markieren
+                        if (cellIndex === 0) {
+                            cell.className = 'row-number';
+                        }
+
+                        // Farben anwenden (falls vorhanden)
+                        const cellKey = `${shiftName}_${rowIndex}_${cellIndex}`;
+                        if (data.colors && data.colors[cellKey]) {
+                            cell.style.backgroundColor = data.colors[cellKey];
+                        }
+
+                        row.appendChild(cell);
+                    });
+                    
+                    tbody.appendChild(row);
+                });
+
+                table.appendChild(tbody);
+                scheduleContainer.appendChild(table);
+            });
+        }
+
+        // WhatsApp Share
+        function shareToWhatsApp() {
+            const title = document.getElementById('mobile-title').textContent;
+            const dateInfo = document.getElementById('mobile-date-info').textContent;
+            const message = encodeURIComponent(`📋 ${title}\n📅 ${dateInfo}\n\n${window.location.href}`);
+            window.open(`https://wa.me/?text=${message}`, '_blank');
+        }
+
+        // LZ-String für Dekomprimierung (falls nicht verfügbar, Fallback)
+        const LZString = window.LZString || {
+            decompressFromBase64: function(input) {
+                if (!input) return null;
+                try {
+                    return atob(input);
+                } catch (e) {
+                    return null;
+                }
+            }
+        };
+
+        // Beim Laden initialisieren
+        document.addEventListener('DOMContentLoaded', function() {
+            loadScheduleData();
+            
+            // Auto-refresh alle 5 Minuten
+            setInterval(loadScheduleData, 5 * 60 * 1000);
+        });
+
+        // Pull-to-refresh Simulation
+        let startY = 0;
+        let currentY = 0;
+        let pullDistance = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchmove', function(e) {
+            currentY = e.touches[0].clientY;
+            pullDistance = currentY - startY;
+            
+            if (pullDistance > 50 && window.scrollY === 0) {
+                // Visual feedback für Pull-to-refresh könnte hier implementiert werden
+            }
+        });
+
+        document.addEventListener('touchend', function(e) {
+            if (pullDistance > 100 && window.scrollY === 0) {
+                loadScheduleData();
+            }
+            pullDistance = 0;
+        });
+
+    </script>
+</body>
+</html>

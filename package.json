@@ -1,0 +1,20 @@
+{
+  "name": "dienstplan-desktop",
+  "version": "1.0.0",
+  "description": "Eine Desktop-Anwendung zur Dienstplanerstellung",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Dienstplan",
+    "Electron",
+    "Desktop"
+  ],
+  "author": "Ihr Name",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^28.2.3"
+  }
+}

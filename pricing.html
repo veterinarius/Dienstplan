@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preise & Tarife</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #1d1d1f;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .pricing-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .pricing-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .pricing-header p {
+            color: #86868b;
+            font-size: 1.2rem;
+        }
+        .pricing-cards {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .pricing-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 6px 32px rgba(0,0,0,0.08);
+            border: 1px solid #e5e5ea;
+            flex: 1 1 300px;
+            max-width: 340px;
+            padding: 2.2rem 1.5rem 2.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .pricing-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 12px 40px rgba(0,122,255,0.13);
+        }
+        .pricing-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.7rem;
+            color: #007aff;
+        }
+        .pricing-price {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #1d1d1f;
+        }
+        .pricing-desc {
+            color: #86868b;
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
+            text-align: center;
+        }
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem 0;
+            width: 100%;
+        }
+        .pricing-features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f2f2f7;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+        .pricing-btn {
+            margin-top: auto;
+            padding: 0.9rem 2.2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: #007aff;
+            color: #fff;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.08);
+        }
+        .pricing-btn:hover {
+            background: #0056cc;
+        }
+        .pricing-card.premium {
+            border: 2px solid #ff9800;
+            box-shadow: 0 8px 32px rgba(255,152,0,0.13);
+        }
+        .pricing-card.free {
+            border: 2px solid #34c759;
+        }
+        @media (max-width: 900px) {
+            .pricing-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+            .pricing-card {
+                max-width: 420px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pricing-container">
+        <div class="pricing-header">
+            <h1>Unsere Tarife</h1>
+            <p>Wählen Sie das passende Paket für Ihren Bedarf. Jederzeit kündbar.</p>
+        </div>
+        <div class="pricing-cards">
+            <!-- Free Trial -->
+            <div class="pricing-card free">
+                <div class="pricing-title">Free Trial</div>
+                <div class="pricing-price">0&nbsp;€<span style="font-size:1rem;font-weight:400;">/Monat</span></div>
+                <div class="pricing-desc">Ideal zum Ausprobieren – kostenlos und unverbindlich.</div>
+                <ul class="pricing-features">
+                    <li>✅ 1 Nutzer</li>
+                    <li>✅ Bis zu 10 Dienstpläne</li>
+                    <li>✅ Basisfunktionen</li>
+                    <li>❌ Kein Export</li>
+                    <li>❌ Kein Support</li>
+                </ul>
+                <button class="pricing-btn" onclick="window.location.href='dienstplan.html'">Jetzt starten</button>
+            </div>
+            <!-- Basic -->
+            <div class="pricing-card">
+                <div class="pricing-title">Basic</div>
+                <div class="pricing-price">9&nbsp;€<span style="font-size:1rem;font-weight:400;">/Monat</span></div>
+                <div class="pricing-desc">Für kleine Teams, die mehr Flexibilität benötigen.</div>
+                <ul class="pricing-features">
+                    <li>✅ Bis zu 5 Nutzer</li>
+                    <li>✅ Unbegrenzte Dienstpläne</li>
+                    <li>✅ Excel-Export</li>
+                    <li>✅ E-Mail Support</li>
+                    <li>❌ Premium-Funktionen</li>
+                </ul>
+                <button class="pricing-btn">Basic wählen</button>
+            </div>
+            <!-- Premium -->
+            <div class="pricing-card premium">
+                <div class="pricing-title">Premium</div>
+                <div class="pricing-price">29&nbsp;€<span style="font-size:1rem;font-weight:400;">/Monat</span></div>
+                <div class="pricing-desc">Für Unternehmen mit höchsten Ansprüchen.</div>
+                <ul class="pricing-features">
+                    <li>✅ Unbegrenzte Nutzer</li>
+                    <li>✅ Unbegrenzte Dienstpläne</li>
+                    <li>✅ Alle Exporte (Excel, Google Sheets)</li>
+                    <li>✅ Priorisierter Support</li>
+                    <li>✅ Premium-Funktionen</li>
+                </ul>
+                <button class="pricing-btn">Premium wählen</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
