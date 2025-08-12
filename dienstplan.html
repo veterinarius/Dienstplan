@@ -22,6 +22,9 @@
                     <span>👤</span>
                     Mitarbeiter hinzufügen
                 </button>
+                <button class="btn btn-mobile-share" onclick="mobileShare()" style="margin-left:0.5rem;">
+                    <span>📱</span> Mobile Share
+                </button>
                 <button class="btn export-button" onclick="exportToExcel()">
                     <span>📊</span>
                     Excel Export
@@ -138,6 +141,53 @@
         </div>
     </div>
 
+    <div id="mobileShareModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="max-width:600px;">
+        <div style="font-size:1.3rem;font-weight:bold;margin-bottom:1.5rem;text-align:center;color:#1d1d1f;">
+            📱 Mobile Share - Dienstplan teilen
+        </div>
+        
+        <div class="share-option" onclick="generateQRCode()" style="display:flex;align-items:center;padding:1rem;border:1px solid #e5e5ea;border-radius:12px;margin-bottom:1rem;cursor:pointer;transition:all 0.2s ease;">
+            <div style="font-size:2rem;margin-right:1rem;">📱</div>
+            <div style="flex:1;">
+                <div style="font-weight:600;margin-bottom:0.3rem;color:#1d1d1f;">QR-Code generieren</div>
+                <div style="font-size:0.9rem;color:#86868b;">Erstellt einen QR-Code mit Link zur mobilen Ansicht der Tabellen</div>
+            </div>
+        </div>
+        
+        <div class="share-option" onclick="shareViaWhatsApp()" style="display:flex;align-items:center;padding:1rem;border:1px solid #e5e5ea;border-radius:12px;margin-bottom:1rem;cursor:pointer;transition:all 0.2s ease;">
+            <div style="font-size:2rem;margin-right:1rem;">💬</div>
+            <div style="flex:1;">
+                <div style="font-weight:600;margin-bottom:0.3rem;color:#1d1d1f;">WhatsApp teilen</div>
+                <div style="font-size:0.9rem;color:#86868b;">Sendet Link zur mobilen Dienstplan-Ansicht über WhatsApp</div>
+            </div>
+        </div>
+        
+        <div class="share-option" onclick="copyMobileLink()" style="display:flex;align-items:center;padding:1rem;border:1px solid #e5e5ea;border-radius:12px;margin-bottom:1rem;cursor:pointer;transition:all 0.2s ease;">
+            <div style="font-size:2rem;margin-right:1rem;">🔗</div>
+            <div style="flex:1;">
+                <div style="font-weight:600;margin-bottom:0.3rem;color:#1d1d1f;">Link kopieren</div>
+                <div style="font-size:0.9rem;color:#86868b;">Kopiert den direkten Link zur mobilen Ansicht in die Zwischenablage</div>
+            </div>
+        </div>
+        
+        <div id="qr-display" style="display:none;">
+            <div style="text-align:center;padding:1rem;background:#f8f9fa;border-radius:12px;margin:1rem 0;">
+                <div style="font-weight:600;margin-bottom:1rem;">QR-Code für mobile Ansicht:</div>
+                <div id="qr-code"></div>
+                <div id="mobile-url-display" style="background:#f8f9fa;padding:0.8rem;border-radius:8px;font-family:monospace;font-size:0.9rem;word-break:break-all;margin:1rem 0;border:1px solid #e5e5ea;"></div>
+                <button class="btn btn-secondary" onclick="downloadQRCode()">
+                    <span>💾</span> QR-Code herunterladen
+                </button>
+            </div>
+        </div>
+        
+        <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:2rem;">
+            <button class="btn btn-secondary" onclick="closeMobileShareModal()">Schließen</button>
+        </div>
+    </div>
+</div>
+
     <!-- Custom Alert Modal -->
     <div id="custom-alert" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;background:rgba(0,0,0,0.18);justify-content:center;align-items:center;">
       <div id="custom-alert-box" style="background:#fff;padding:2.2rem 2.7rem;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,0.22);font-size:1.25rem;font-weight:500;color:#1d1d1f;min-width:280px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem;transform:scale(0.95);opacity:0;transition:all 0.25s cubic-bezier(.4,1.4,.6,1);">
@@ -147,9 +197,7 @@
     </div>
 
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-    <script type="module">
-        //import { addEmployee, removeEmployee } from './js/employees.js';
-        //import { generateSchedule, displaySchedule } from './js/schedule.js';
+    <script>
 
         // Globale Variablen
         let employees = [];
@@ -1099,6 +1147,52 @@
             window.open(`https://wa.me/?text=${message}`, '_blank');
         }
 
+        function mobileShare() {
+            // Prüfen ob Web Share API verfügbar ist
+            if (navigator.share) {
+                let start = startDate ? startDate.toLocaleDateString('de-DE') : '';
+                let end = endDate ? endDate.toLocaleDateString('de-DE') : '';
+                const title = 'Dienstplan';
+                const text = `Neuer Wochenplan vom ${start} bis ${end} ist jetzt verfügbar!`;
+                const url = window.location.href;
+                
+                navigator.share({
+                    title: title,
+                    text: text,
+                    url: url
+                }).then(() => {
+                    console.log('Erfolgreich geteilt');
+                }).catch((error) => {
+                    console.log('Fehler beim Teilen:', error);
+                    // Fallback zu WhatsApp
+                    fallbackShare(text);
+                });
+            } else {
+                // Fallback für Browser ohne Web Share API
+                let start = startDate ? startDate.toLocaleDateString('de-DE') : '';
+                let end = endDate ? endDate.toLocaleDateString('de-DE') : '';
+                const text = `Neuer Wochenplan vom ${start} bis ${end} ist jetzt verfügbar! ${window.location.href}`;
+                fallbackShare(text);
+            }
+        }
+
+        function fallbackShare(text) {
+            // Fallback: Link in Zwischenablage kopieren
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCustomAlert('Link wurde in die Zwischenablage kopiert!');
+                }).catch(() => {
+                    // Wenn Zwischenablage nicht funktioniert, zu WhatsApp weiterleiten
+                    const message = encodeURIComponent(text);
+                    window.open(`https://wa.me/?text=${message}`, '_blank');
+                });
+            } else {
+                // Letzter Fallback: WhatsApp
+                const message = encodeURIComponent(text);
+                window.open(`https://wa.me/?text=${message}`, '_blank');
+            }
+        }
+
         // Kontextmenü-Interaktion
         document.getElementById('context-menu').addEventListener('click', function(e) {
             const swatch = e.target.closest('.color-swatch');
@@ -1509,5 +1603,270 @@
 
 
     </script>
+
+    <script>
+    // Mobile Share Modal Functions - replace the existing mobileShare() function
+    function mobileShare() {
+        openMobileShareModal();
+    }
+
+    function openMobileShareModal() {
+        document.getElementById('mobileShareModal').style.display = 'flex';
+    }
+
+    function closeMobileShareModal() {
+        document.getElementById('mobileShareModal').style.display = 'none';
+        document.getElementById('qr-display').style.display = 'none';
+        document.getElementById('qr-code').innerHTML = '';
+    }
+
+    // Generate mobile-optimized HTML of only the tables
+    function generateMobileHTML() {
+        const tables = document.querySelectorAll('#schedule-container table');
+        const titles = document.querySelectorAll('#schedule-container .table-title');
+        
+        if (tables.length === 0) {
+            return null;
+        }
+
+        // Get title and date info
+        const mainTitle = document.getElementById('main-title').textContent || 'Dienstplan';
+        const dateInfo = document.getElementById('wochenplan-datum').textContent || '';
+        
+        let mobileHTML = `
+        <!DOCTYPE html>
+        <html lang="de">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${mainTitle}</title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    margin: 0;
+                    padding: 1rem;
+                    background: #f8f9fa;
+                    font-size: 14px;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 2rem;
+                    padding: 1rem;
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                }
+                .header h1 {
+                    margin: 0 0 0.5rem 0;
+                    color: #1d1d1f;
+                    font-size: 1.5rem;
+                }
+                .header .date {
+                    color: #86868b;
+                    font-weight: 600;
+                }
+                .table-section {
+                    margin-bottom: 2rem;
+                    background: white;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                }
+                .table-title {
+                    padding: 1rem;
+                    background: #007aff;
+                    color: white;
+                    font-weight: 600;
+                    font-size: 1.1rem;
+                    margin: 0;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 13px;
+                }
+                th, td {
+                    padding: 0.7rem 0.5rem;
+                    text-align: left;
+                    border-bottom: 1px solid #e5e5ea;
+                    vertical-align: top;
+                    word-wrap: break-word;
+                }
+                th {
+                    background: #f8f9fa;
+                    font-weight: 600;
+                    color: #1d1d1f;
+                    font-size: 12px;
+                }
+                tr:nth-child(even) {
+                    background: #fafafa;
+                }
+                .row-number {
+                    background: #f0f0f0 !important;
+                    font-weight: 600;
+                    text-align: center;
+                    width: 60px;
+                }
+                @media (max-width: 768px) {
+                    body { padding: 0.5rem; }
+                    table { font-size: 12px; }
+                    th, td { padding: 0.5rem 0.3rem; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>${mainTitle}</h1>
+                ${dateInfo ? `<div class="date">${dateInfo}</div>` : ''}
+            </div>
+        `;
+
+        // Add each table with its title
+        tables.forEach((table, index) => {
+            const title = titles[index] ? titles[index].textContent : `Tabelle ${index + 1}`;
+            
+            mobileHTML += `
+            <div class="table-section">
+                <div class="table-title">${title}</div>
+                <table>
+                    ${table.innerHTML}
+                </table>
+            </div>
+            `;
+        });
+
+        mobileHTML += `
+            <div style="text-align: center; margin-top: 2rem; padding: 1rem; color: #86868b; font-size: 12px;">
+                Generiert am ${new Date().toLocaleString('de-DE')}
+            </div>
+        </body>
+        </html>`;
+
+        return mobileHTML;
+    }
+
+    // Create a shareable link by encoding the HTML
+    function createMobileLink() {
+        const mobileHTML = generateMobileHTML();
+        if (!mobileHTML) {
+            showCustomAlert('Keine Tabellen zum Teilen gefunden. Bitte generieren Sie zuerst einen Dienstplan.');
+            return null;
+        }
+
+        // Create a data URL with the HTML
+        const encodedHTML = btoa(unescape(encodeURIComponent(mobileHTML)));
+        const dataURL = `data:text/html;charset=utf-8;base64,${encodedHTML}`;
+        
+        return dataURL;
+    }
+
+    // Generate QR Code
+    function generateQRCode() {
+        const mobileLink = createMobileLink();
+        if (!mobileLink) return;
+
+        const qrDisplay = document.getElementById('qr-display');
+        const qrCodeDiv = document.getElementById('qr-code');
+        const urlDisplay = document.getElementById('mobile-url-display');
+        
+        // Clear previous QR code
+        qrCodeDiv.innerHTML = '';
+        
+        // Generate QR code
+        QRCode.toCanvas(qrCodeDiv, mobileLink, {
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+        }, function (error) {
+            if (error) {
+                console.error('QR Code generation failed:', error);
+                showCustomAlert('Fehler beim Generieren des QR-Codes');
+            } else {
+                console.log('QR Code generated successfully');
+            }
+        });
+        
+        // Show truncated URL
+        const truncatedURL = mobileLink.length > 100 ? 
+            mobileLink.substring(0, 100) + '...' : mobileLink;
+        urlDisplay.textContent = truncatedURL;
+        
+        qrDisplay.style.display = 'block';
+    }
+
+    // Download QR Code
+    function downloadQRCode() {
+        const canvas = document.querySelector('#qr-code canvas');
+        if (canvas) {
+            const link = document.createElement('a');
+            link.download = 'dienstplan-qr-code.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    }
+
+    // Share via WhatsApp
+    function shareViaWhatsApp() {
+        const mobileLink = createMobileLink();
+        if (!mobileLink) return;
+
+        const mainTitle = document.getElementById('main-title').textContent || 'Dienstplan';
+        const dateInfo = document.getElementById('wochenplan-datum').textContent || '';
+        
+        let message = `📅 ${mainTitle}`;
+        if (dateInfo) {
+            message += `\n${dateInfo}`;
+        }
+        message += `\n\n📱 Mobile Ansicht verfügbar - scannen Sie den QR-Code oder verwenden Sie den direkten Link.`;
+
+        const whatsappURL = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappURL, '_blank');
+        
+        // Show QR code automatically after WhatsApp share
+        setTimeout(() => {
+            generateQRCode();
+        }, 500);
+    }
+
+    // Copy mobile link to clipboard
+    function copyMobileLink() {
+        const mobileLink = createMobileLink();
+        if (!mobileLink) return;
+
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(mobileLink).then(() => {
+                showCustomAlert('✅ Link wurde in die Zwischenablage kopiert!');
+            }).catch(err => {
+                console.error('Clipboard copy failed:', err);
+                fallbackCopyMethod(mobileLink);
+            });
+        } else {
+            fallbackCopyMethod(mobileLink);
+        }
+    }
+
+    // Fallback copy method
+    function fallbackCopyMethod(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            showCustomAlert('✅ Link wurde in die Zwischenablage kopiert!');
+        } catch (err) {
+            showCustomAlert('❌ Kopieren fehlgeschlagen. Bitte verwenden Sie den QR-Code oder WhatsApp-Share.');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+</script>
+
 </body>
 </html>
